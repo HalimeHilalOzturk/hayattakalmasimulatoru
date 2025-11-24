@@ -1,0 +1,222 @@
+#include <stdio.h>
+#include <stdlib.h> // rand() ve srand() için
+#include <time.h>   // rastgele sayı üretimi için
+
+// --- 4. Durum Yönetimi Değişkenleri ---
+int saglik = 100; // Başlangıç Sağlık (0-100)
+int enerji = 100; // Başlangıç Enerji (0-100)
+int yemek = 10;   // Başlangıç Yemek Sayısı (Örn. 0-100)
+int siginak_bulundu = 0; // Sığınak durumu (0: Bulunmadı, 1: Bulundu)
+
+// --- Aritmetik İşlemler için Yardımcı Fonksiyon ---
+// Değerleri 0 ile 100 arasında tutar (Sağlık/Enerji)
+void degeri_guncelle(int *deger, int degisim) {
+    *deger += degisim;
+    if (*deger < 0) {
+        *deger = 0;
+    } else if (*deger > 100) {
+        *deger = 100;
+    }
+}
+
+// --- Oyuncu Durumunu Gösteren Fonksiyon ---
+void durumu_goster() {
+    printf("\n--- Mevcut Durum ---\n");
+    printf("Sağlık: %d/100\n", saglik);
+    printf("Enerji: %d/100\n", enerji);
+    printf("Yemek: %d birim\n", yemek);
+    printf("Sığınak: %s\n", siginak_bulundu ? "BULUNDU" : "BULUNAMADI");
+
+    // Zorunlu IF-ELSE Yapısı ile Durum Kontrolü
+    if (saglik <= 0 || enerji <= 0 || yemek <= 0) {
+        printf("\nUYARI: Durumunuz kritik! Hayatta kalamayabilirsiniz.\n");
+    } else if (saglik < 30 || enerji < 30) {
+        printf("\nDikkat! Sağlık veya Enerjiniz düşük.\n");
+    } else {
+        printf("Durumunuz iyi görünüyor.\n");
+    }
+    printf("--------------------\n");
+}
+
+// --- Komut Açıklamaları ---
+void komut_aciklamalari() {
+    printf("\n--- Komut Sistemi ---\n");
+    printf("A: Avlan (Enerji azalır, yemek kazanma ihtimali)\n");
+    printf("S: Dinlen (Enerji artışı, sağlık yenilenme ihtimali)\n");
+    printf("E: Envanteri görüntüle\n");
+    printf("R: Bölgeyi keşfet (FOR döngüsü ile simüle et)\n");
+    printf("F: Tehlkeli Dalgayı simüle et (FOR döngüsü ile simüle et)\n");
+    printf("P: Şifreli ilerleme (DO-WHILE döngüsü ile engel aşma)\n");
+    printf("X: Oyundan çık\n");
+    printf("---------------------\n");
+}
+
+// --- Ana Oyun Döngüsü ---
+int main() {
+    // Rastgele sayı üretimi için başlangıç ayarı
+    srand(time(NULL)); 
+
+    char komut;
+    int oyun_devam = 1;
+
+    komut_aciklamalari();
+
+    // Oyun döngüsü (Komut girildikçe devam edecek)
+    while (oyun_devam) {
+        durumu_goster();
+
+        if (saglik <= 0) {
+            printf("\n*** HAYATTA KALAMADIN! Sağlığın bitti. ***\n");
+            oyun_devam = 0;
+            break;
+        }
+
+        printf("\nKomut girin (yardım için '?' veya 'komut_aciklamalari'): ");
+        // Oyuncudan tek karakterlik komut alınıyor
+        if (scanf(" %c", &komut) != 1) {
+            // Giriş hatası kontrolü
+            while (getchar() != '\n'); // Hatalı girişi temizle
+            continue;
+        }
+        
+        // Komutu büyük harfe çevir
+        komut = toupper(komut);
+
+        // Zorunlu SWITCH-CASE Komut Yapısı
+        switch (komut) {
+            case 'A': // Avlan (Aritmetik işlemler & IF-ELSE ile şans)
+                printf("Avlanıyorsun...\n");
+                degeri_guncelle(&enerji, -10); // Enerji azalır
+                
+                // Yemek kazanma ihtimali (&& veya || kullanabilirsiniz)
+                if (rand() % 10 < 7) { // %70 şans
+                    int kazanilan_yemek = 5 + rand() % 5; // 5 ile 9 arası
+                    yemek += kazanilan_yemek;
+                    printf("Başarıyla avlandın, +%d yemek kazandın!\n", kazanilan_yemek);
+                } else {
+                    printf("Bu sefer bir şey bulamadın.\n");
+                }
+                break;
+
+            case 'S': // Dinlen (Aritmetik işlemler & IF-ELSE)
+                printf("Dinleniyorsun...\n");
+                degeri_guncelle(&enerji, 20); // Enerji artar
+                
+                // Sağlık yenileme ihtimali
+                if (rand() % 10 < 3 && saglik < 100) { // %30 şans ve sağlık tam değilse
+                    degeri_guncelle(&saglik, 5);
+                    printf("İyi dinlenme sayesinde biraz sağlık kazandın. (+5 Sağlık)\n");
+                }
+                break;
+            
+            case 'E': // Envanteri görüntüle
+                printf("Envanterinde %d birim yemek var.\n", yemek);
+                break;
+
+            case 'F': // 3. Döngüler (FOR Zorunlu): Tehlike Dalgası
+                printf("!!! TEHLİKE DALGASI YAKLAŞIYOR !!!\n");
+                // Her döngüde oyuncu durumu kötüleşebilir (Hasar veya Enerji Kaybı)
+                
+                // Zorunlu FOR döngüsü ile tehlike dalgası simüle edilir
+                for (int i = 0; i < 3; i++) {
+                    printf("Dalga %d...\n", i + 1);
+                    int kayip = 5 + rand() % 10; // 5-14 arası kayıp
+                    
+                    if (rand() % 2 == 0) { // %50 Şans: Sağlık kaybı
+                        degeri_guncelle(&saglik, -kayip);
+                        printf("  -> Tehlike seni vurdu! %d Sağlık kaybettin.\n", kayip);
+                    } else { // %50 Şans: Enerji kaybı
+                        degeri_guncelle(&enerji, -kayip);
+                        printf("  -> Yorucu bir durum. %d Enerji kaybettin.\n", kayip);
+                    }
+                    
+                    if (saglik <= 0) break; // Sağlık biterse döngüden çık
+                }
+                break;
+
+            case 'R': // Bölgeyi Keşfet (FOR Zorunlu)
+                printf("Bölge keşfediliyor...\n");
+                int s_bulma_sans = 1; // Sığınak bulma şansı
+                
+                // Zorunlu FOR döngüsü ile bölge keşfi simüle edilir
+                for (int i = 0; i < 4; i++) {
+                    printf("...Keşif devam ediyor.\n");
+                    // Eğer sığınak bulunmadıysa, her adımda şansını dene
+                    if (!siginak_bulundu && rand() % 10 == 0) { // %10 şans
+                        siginak_bulundu = 1;
+                        printf("!!! BAŞARILI !!! Sığınak bulundu!\n");
+                        break; // Sığınak bulununca döngüden çık
+                    }
+                }
+                if (!siginak_bulundu) {
+                    printf("Bu keşifte sığınak bulunamadı.\n");
+                }
+                break;
+                
+            case 'P': // 3. Döngüler (DO-WHILE Zorunlu): Şifreli İlerleme/Engel Aşma
+                printf("Şifreli bir kapıya ulaştın. İlerlemek için doğru şifreyi girmelisin.\n");
+                
+                if (siginak_bulundu) {
+                    printf("Zaten sığınağı buldun, daha fazla ilerlemeye gerek yok.\n");
+                    break;
+                }
+                
+                int dogru_karakter = 'G'; // Örneğin: 'G' harfi doğru şifre
+                char tahmin;
+                int engel_asildi = 0;
+                
+                // Zorunlu DO-WHILE döngüsü ile engel aşma simüle edilir
+                do {
+                    printf("Doğru karakteri gir (veya çıkmak için '0'): ");
+                    scanf(" %c", &tahmin);
+                    tahmin = toupper(tahmin);
+
+                    if (tahmin == '0') {
+                        printf("Kapıdan geri çekiliyorsun.\n");
+                        break;
+                    }
+                    
+                    if (tahmin == dogru_karakter) {
+                        printf("!!! Doğru karakter! Kapı açıldı. !!!\n");
+                        siginak_bulundu = 1; // İlerleme başarılı
+                        engel_asildi = 1;
+                    } else {
+                        printf("Yanlış karakter! Tekrar dene. (Enerji kaybediyorsun)\n");
+                        degeri_guncelle(&enerji, -5); // Yanlış tahmin enerji kaybettirir
+                        if (enerji <= 0) {
+                            printf("Enerjin bitti, ilerleyemiyorsun.\n");
+                            break;
+                        }
+                    }
+                } while (!engel_asildi); // Engel aşılana kadar veya çıkana kadar devam et
+
+                break;
+                
+            case 'X': // Oyundan Çık
+                printf("Oyundan çıkılıyor. Tekrar bekleriz!\n");
+                oyun_devam = 0;
+                break;
+
+            default:
+                printf("Geçersiz komut. Komut listesi için '?' veya 'komut_aciklamalari' yazın.\n");
+                break;
+        }
+        
+        // Komut sonrası genel durum kontrolü
+        if (yemek > 0) {
+            yemek--; // Her turda 1 birim yemek tüketimi
+        } else {
+            // Yemek yoksa sağlık ve enerji kaybı (Zorunlu IF-ELSE veya aritmetik)
+            printf("!!! Yemeğin bitti, açlıktan hasar alıyorsun. !!!\n");
+            degeri_guncelle(&saglik, -5);
+            degeri_guncelle(&enerji, -5);
+        }
+        
+        // Oyunun bittiği durum kontrolü
+        if (saglik <= 0) {
+            oyun_devam = 0;
+        }
+    }
+
+    return 0;
+}
