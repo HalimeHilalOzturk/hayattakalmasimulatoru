@@ -1,1 +1,1 @@
-# hayattakalmasimulatoru
+Bu proje, C programlama dilinin temel yapılarını (for, do-while, switch-case, if-else) kullanarak oluşturulmuş, metin tabanlı basit bir hayatta kalma oyunu simülasyonudur. Amacınız, kaynakları (Sağlık, Enerji, Yemek) yöneterek Sığınağı bulmak ve hayatta kalmaktır.
